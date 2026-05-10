@@ -179,23 +179,23 @@ Now we will be building out the VPC networking components as well as security gr
 
  ![](/demos/FillSubnetGroupDetails2.png)
 
-2. We'll now go through several configuration steps. Start with a Standard create for this MySQL-Compatible Amazon Aurora database. Leave the rest of the defaults in the Engine options as default.
+2. We'll now go through several configuration steps. Start with a Standard create for this MySQL database. Select full configuration and select the free tier.
 
    ![](/demos/DBConfig1.png)
 
-   Under the Templates section choose Dev/Test since this isn't being used for production at the moment. Under Settings set a username and password of your choice and note them down since we'll be using password authentication to access our database.
+   Under Settings set a username and password of your choice and note them down since we'll be using password authentication to access our database.
 
    ![](/demos/DBConfig2.png)
 
-   Next, under Availability and durability change the option to create an Aurora Replica or reader node in a different availability zone. Under Connectivity, set the VPC, choose the subnet group we created earlier, and select no for public access.
+   Under instance configuration select instance type.
 
    ![](/demos/DBConfig3.png)
 
-   Set the security group we created for the database layer, make sure password authentication is selected as our authentication choice, and create the database.
+   Under Connectivity, set the VPC, choose the subnet group we created earlier, and select no for public access  and Set the security group we created for the database layer, make sure password authentication is selected as our authentication choice, and create the database.
 
    ![](/demos/DBConfig4.png)
 
-3. When your database is provisioned, you should see a reader and writer instance in the database subnets of each availability zone. Note down the writer endpoint for your database for later use.
+4. When your database is provisioned, you should see a database . Note down the endpoint for your database for later use.
    ![](/demos/DBEndpoint.png)
 
 ## App Tier Instance Deployment - Part 3
