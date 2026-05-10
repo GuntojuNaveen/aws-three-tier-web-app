@@ -172,11 +172,12 @@ Now we will be building out the VPC networking components as well as security gr
    
  ![](/demos/FillSubnetGroupDetails1.png)
  
- ![](/demos/FillSubnetGroupDetails2.png)
  
 ### Multi-AZ Database Deployment
 
 1. Navigate to Databases on the left hand side of the RDS dashboard and click Create database.
+
+ ![](/demos/FillSubnetGroupDetails2.png)
 
 2. We'll now go through several configuration steps. Start with a Standard create for this MySQL-Compatible Amazon Aurora database. Leave the rest of the defaults in the Engine options as default.
 
