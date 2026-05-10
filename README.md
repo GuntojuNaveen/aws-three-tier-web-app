@@ -16,7 +16,7 @@ It is intended for those who have a technical role. The assumption is that you h
 
 ## Architecture Overview
 
-![Architecture Diagram](/demo/3-tier-arch-1.png)
+![Architecture Diagram](/demos/3-tier-arch-1.png)
 
 In this architecture, a public-facing Application Load Balancer forwards client traffic to our web tier EC2 instances. The web tier is running Nginx webservers that are configured to serve a React.js website and redirects our API calls to the application tier’s internal facing load balancer. The internal facing load balancer then forwards that traffic to the application tier, which is written in Node.js. The application tier manipulates data in an Aurora MySQL multi-AZ database and returns it to our web tier. Load balancing, health checks and autoscaling groups are created at each layer to maintain the availability of this architecture.
 
@@ -81,6 +81,8 @@ Now we will be building out the VPC networking components as well as security gr
    Your final subnet setup should be similar to this. Verify that you have 3 subnets across 2 different availability zones.
 
    ![subnet](/demos/FillSubnetDetails.png)
+
+   ![subnet](/demos/allSubnets.png)
 
 ### Internet Connectivity
 
@@ -154,6 +156,8 @@ Now we will be building out the VPC networking components as well as security gr
 6. The fifth security group we’ll configure protects our private database instances. For this security group, add an inbound rule that will allow traffic from the private instance security group to the MYSQL/Aurora port (3306).
    ![](/demos/DBSG.png)
 
+   ![](/demos/allSecurityGroups.png)
+
 ## Database Deployment - Part 2
 
 - Deploy Database Layer
@@ -164,10 +168,12 @@ Now we will be building out the VPC networking components as well as security gr
 
 1. Navigate to the RDS dashboard in the AWS console and click on Subnet groups on the left hand side. Click Create DB subnet group.
 2. Give your subnet group a name, description, and choose the VPC we created.
-   ![](/demos/FillSubnetGroupDetails1.png)
 3. When adding subnets, make sure to add the subnets we created in each availability zone specificaly for our database layer. You may have to navigate back to the VPC dashboard and check to make sure you're selecting the correct subnet IDs.
-   ![](/demos/FillSubnetGroupDetails2.png)
-
+   
+ ![](/demos/FillSubnetGroupDetails1.png)
+ 
+ ![](/demos/FillSubnetGroupDetails2.png)
+ 
 ### Multi-AZ Database Deployment
 
 1. Navigate to Databases on the left hand side of the RDS dashboard and click Create database.
@@ -223,14 +229,16 @@ In this section, we will create an EC2 instance for our app layer and make all n
 ### Connect to Instance
 
 1. Navigate to your list of running EC2 Instances by clicking on Instances on the left hand side of the EC2 dashboard. When the instance state is running, connect to your instance by clicking the checkmark box to the left of the instance, and click the connect button on the top right corner of the dashboard.Select the Session Manager tab, and click connect. This will open a new browser tab for you.
-
+   
+   ![](/demos/ssmImage.png)
+   
    <b>NOTE</b>: <i>If you get a message saying that you cannot connect via session manager, then check that your instances can route to your NAT gateways and verify that you gave the necessary permissions on the IAM role for the Ec2 instance. </i>
 
-2. When you first connect to your instance like this, you will be logged in as ssm-user which is the default user. Switch to ec2-user by executing the following command in the browser terminal:
+3. When you first connect to your instance like this, you will be logged in as ssm-user which is the default user. Switch to ec2-user by executing the following command in the browser terminal:
    ```
    sudo -su ec2-user
    ```
-3. Let’s take this moment to make sure that we are able to reach the internet via our NAT gateways. If your network is configured correctly up till this point, you should be able to ping the google DNS servers:
+4. Let’s take this moment to make sure that we are able to reach the internet via our NAT gateways. If your network is configured correctly up till this point, you should be able to ping the google DNS servers:
 
    ```
    ping 8.8.8.8
@@ -417,10 +425,13 @@ In this section,we will create an Amazon Machine Image (AMI) of the app tier ins
 1. While the AMI is being created, we can go ahead and create our target group to use with the load balancer. On the EC2 dashboard navigate to <b>Target Groups</b> under <b>Load Balancing</b> on the left hand side. Click on <b>Create Target Group</b>.
 
 2. The purpose of forming this target group is to use with our load blancer so it may balance traffic across our private app tier instances. Select Instances as the target type and give it a name.
-
+   ![](/demos/TargetGroup1.png)
+   
    Then, set the protocol to <b>HTTP</b> and the port to 4000. Remember that this is the port our Node.ja app is running on. Select the VPC we've been using thus far, and then change the health check path to be <b>/health</b>. This is the health check endpoint of our app. Click <b>Next</b>.
 
-3. We are NOT going to register any targets for now, so just skip that step and create the target group.
+   ![](/demos/TargetGroup2.png)
+   
+4. We are NOT going to register any targets for now, so just skip that step and create the target group.
 
 ### Internal Load Balanceer
 
@@ -440,6 +451,9 @@ In this section,we will create an Amazon Machine Image (AMI) of the app tier ins
 
    ![](/demos/LBConfig3.png)<image>
 
+
+   ![](/demos/appTierinternallb.png)
+
 ### Launch Template
 
 1. Before we configure Auto Scaling, we need to create a Launch template with the AMI we created earlier. On the left side of the EC2 dashboard navigate to <b>Launch Template</b> under </b>Instances </b>and click <b>Create Launch Template</b>.
@@ -457,6 +471,7 @@ In this section,we will create an Amazon Machine Image (AMI) of the app tier ins
    ![](/demos/LaunchTemplateConfig3.png)
 
    ![](/demos/LaunchTemplateConfig4.png)
+   
 
 ### Auto Scaling
 
@@ -474,6 +489,8 @@ In this section,we will create an Amazon Machine Image (AMI) of the app tier ins
    ![](/demos/ConfigureASG3.png)
 
 5. For Configure group size and scaling policies, set desired, minimum and maximum capacity to 2. Click skip to review and then Create Auto Scaling Group.
+
+   ![](/demos/groupSize.png)
 
    You should now have your internal load balancer and autoscaling group configured correctly. You should see the autoscaling group spinning up 2 new app tier instances. If you wanted to test if this is working correctly, you can delete one of your new instances manually and wait to see if a new instance is booted up to replace it.
 
@@ -545,7 +562,7 @@ Then, upload this file and the **application-code/web-tier** folder to the s3 bu
 
 3. NGINX can be used for different use cases like load balancing, content caching etc, but we will be using it as a web server that we will configure to serve our application on port 80, as well as help direct our API calls to the internal load balancer.
    ```bash
-   sudo amazon-linux-extras install nginx1 -y
+   sudo yum install nginx -y
    ```
 4. We will now have to configure NGINX. Navigate to the Nginx configuration file with the following commands and list the files in the directory:
 
@@ -599,17 +616,22 @@ In this section of the workshop we will create an Amazon Machine Image (AMI) of 
 
 1. Navigate to Instances on the left hand side of the EC2 dashboard. Select the web tier instance we created and under **Actions** select **Image and templates**. Click on **Create Image**.
 
+![](/demos/WebTierAMI.png)
+
 2. Give the image a name and description and then click **Create image**. This will take a few minutes, but if you want to monitor the status of image creation you can see it by clicking **AMIs** under **Images** on the left hand navigation panel of the EC2 dashboard.
 
 ### Target Group
 
 1. While the AMI is being created, we can go ahead and create our target group to use with the load balancer. On the EC2 dashboard navigate to **Target Groups** under **Load Balancing** on the left hand side. Click on **Create Target Group.**
 
-2. The purpose of forming this target group is to use with our load blancer so it may balance traffic across our public web tier instances. Select Instances as the target type and give it a name.
+   ![](/demos/WebTierTargetGroup.png)
+
+3. The purpose of forming this target group is to use with our load blancer so it may balance traffic across our public web tier instances. Select Instances as the target type and give it a name.
 
    Then, set the protocol to HTTP and the port to 80. Remember this is the port NGINX is listening on. Select the VPC we've been using thus far, and then change the health check path to be /health. Click Next.
+   ![](/demos/WebTierTargetGroup1.png)
 
-3. We are NOT going to register any targets for now, so just skip that step and create the target group.
+4. We are NOT going to register any targets for now, so just skip that step and create the target group.
 
 ### Internet Facing Load Balancer
 
@@ -617,9 +639,15 @@ In this section of the workshop we will create an Amazon Machine Image (AMI) of 
 
 2. We'll be using an **Application Load Balancer** for our HTTP traffic so click the create button for that option.
 
+   ![](/demos/internetfacingloadbalacer.png)
+
 3. After giving the load balancer a name, be sure to select **internet facing** since this one will not be public facing, but rather it will route traffic from our web tier to the app tier.
 
+   ![](/demos/internetfacingloadbalacer1.png)
+   
    Select the correct network configuration for VPC and **public** subnets.
+
+   ![](/demos/internetfacingloadbalacer2.png)
 
    Select the security group we created for this internal ALB. Now, this ALB will be listening for HTTP traffic on port 80. It will be forwarding the traffic to our **target group** that we just created, so select it from the dropdown, and create the load balancer.
 
@@ -635,23 +663,37 @@ In this section of the workshop we will create an Amazon Machine Image (AMI) of 
 
    Set the correct security group for our web tier, and then under **Advanced details** use the same IAM instance profile we have been using for our EC2 instances.
 
+   ![](</demos/LaunchTemplateConfig1%20(2).png>)
+
+   ![](</demos/LaunchTemplateConfig1%20(3).png>)
+
 ### Auto Scaling
 
 1. We will now create the Auto Scaling Group for our web instances. On the left side of the EC2 dashboard navigate to **Auto Scaling Groups** under **Auto Scaling** and click **Create Auto Scaling group**.
 
 2. Give your Auto Scaling group a name, and then select the Launch Template we just created and click next.
+ 
+ ![](</demos/webtierASG.png>)
 
 3. On the **Choose instance launch options** page set your VPC, and the public subnets for the web tier and continue to step 3.
 
+ ![](</demos/webtierASG1.png>)
+
 4. For this next step, attach this Auto Scaling Group to the Load Balancer we just created by selecting the existing web tier load balancer's target group from the dropdown. Then, click next.
 
+![](</demos/webtierASG2.png>)
+
 5. For **Configure group size and scaling policies**, set desired, minimum and maximum capacity to **2**. Click skip to review and then Create Auto Scaling Group.
+
+![](</demos/webtierASG3.png>)
 
    You should now have your external load balancer and autoscaling group configured correctly. You should see the autoscaling group spinning up 2 new web tier instances. If you wanted to test if this is working correctly, you can delete one of your new instances manually and wait to see if a new instance is booted up to replace it. To test if your entire architecture is working, navigate to your external facing loadbalancer, and plug in the DNS name into your browser
 
    **NOTE**: _Again, your original web tier instance is excluded from the ASG so you will see 3 instances in the EC2 dashboard. You can delete your original instance that you used to generate the web tier AMI but it's recommended to keep it around for troubleshooting purposes._
 
    ![](/demos/FinalLBDNS.png)
+
+   ![](/demos/FinalLBDNS1.png)
 
 ### ** Congrats! You’ve Implemented a 3 Tier Web Architecture! **<br>
 
