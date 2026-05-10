@@ -10,3 +10,4 @@ It is intended for those who have a technical role. The assumption is that you h
 # Pre-requisites:
 An AWS account. If you don’t have an AWS account, follow the instructions here and click on “Create an AWS Account” button in the top right corner to create one.
 IDE or text editor of your choice.
+# Architecture Overview
