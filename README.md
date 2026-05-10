@@ -24,7 +24,7 @@ In this architecture, a public-facing Application Load Balancer forwards client 
 
 ### Download Code from Github
 
-git clone https://github.com/iamtejasmane/aws-three-tier-web-app.git
+git clone https://github.com/GuntojuNaveen/aws-three-tier-web-app.git
 
 ### S3 Bucket Creation
 
