@@ -18,7 +18,7 @@ It is intended for those who have a technical role. The assumption is that you h
 
 ![Architecture Diagram](/demos/3-tier-arch-1.png)
 
-In this architecture, a public-facing Application Load Balancer forwards client traffic to our web tier EC2 instances. The web tier is running Nginx webservers that are configured to serve a React.js website and redirects our API calls to the application tier’s internal facing load balancer. The internal facing load balancer then forwards that traffic to the application tier, which is written in Node.js. The application tier manipulates data in an Aurora MySQL multi-AZ database and returns it to our web tier. Load balancing, health checks and autoscaling groups are created at each layer to maintain the availability of this architecture.
+In this architecture, a public-facing Application Load Balancer forwards client traffic to our web tier EC2 instances. The web tier is running Nginx webservers that are configured to serve a React.js website and redirects our API calls to the application tier’s internal facing load balancer. The internal facing load balancer then forwards that traffic to the application tier, which is written in Node.js. The application tier manipulates data in an MySQL database and returns it to our web tier. Load balancing, health checks and autoscaling groups are created at each layer to maintain the availability of this architecture.
 
 ## Setup - Part 0
 
@@ -46,7 +46,7 @@ git clone https://github.com/GuntojuNaveen/aws-three-tier-web-app.git
 
 ## Networking and Security - Part 1
 
-Now we will be building out the VPC networking components as well as security groups that will add a layer of protection around our EC2 instances, Aurora databases, and Elastic Load Balancers.
+Now we will be building out the VPC networking components as well as security groups that will add a layer of protection around our EC2 instances, Mysql databases, and Elastic Load Balancers.
 
 - Create an isolated network with the following components:
   - VPC
@@ -214,7 +214,7 @@ In this section, we will create an EC2 instance for our app layer and make all n
 
 2. Select the first Amazon Linux 2 AMI
 
-3. We'll be using the free tier eligible <b>T.2 micro</b> instance type. Select that and click Next: Configure Instance Details.
+3. We'll be using the free tier eligible <b>T.3 micro</b> instance type. Select that and click Next: Configure Instance Details.
 4. When configuring the instance details, make sure to select to correct Network, subnet, and IAM role we created. Note that this is the app layer, so use one of the private subnets we created for this layer.
 
    ![](/demos/ConfigureInstanceDetails.png)
